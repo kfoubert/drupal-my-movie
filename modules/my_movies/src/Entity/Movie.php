@@ -170,8 +170,6 @@ final class Movie extends ContentEntityBase implements MovieInterface {
       ->setLabel(t('Changed'))
       ->setDescription(t('The time that the movie was last edited.'));
 
-    /* pregenerated code */
-
     $fields["languages"] = BaseFieldDefinition::create('list_string')
       ->setLabel(t('Language Options'))
       ->setDescription(t("Select the primary language for this movie."))

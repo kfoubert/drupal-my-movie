@@ -60,8 +60,6 @@ final class MovieSettingsForm extends FormBase
     return static::FORM_ID;
   }
 
-  /* pregenerated code */
-
   /**
    * {@inheritdoc}
    */
