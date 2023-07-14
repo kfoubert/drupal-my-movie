@@ -1,0 +1,134 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * @file
+ * Provides a movie entity type.
+ */
+
+use Drupal\Core\Render\Element;
+use Drupal\my_movies\Entity\Movie;
+use Drupal\my_movies\Form\MovieSettingsForm;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function my_movies_theme(): array
+{
+  return [
+    'my_movies_movie' => ['render element' => 'elements'],
+  ];
+}
+
+/**
+ * Prepares variables for movie templates.
+ *
+ * Default template: my-movies-movie.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the movie information and any
+ *     fields attached to the entity.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_my_movies_movie(array &$variables): void
+{
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+}
+
+/**
+ * Implements hook_user_cancel().
+ */
+function my_movies_user_cancel($edit, UserInterface $account, $method): void
+{
+  switch ($method) {
+    case 'user_cancel_block_unpublish':
+      // Unpublish movies.
+      $storage = \Drupal::entityTypeManager()->getStorage('my_movies_movie');
+      $my_movies_movie_ids = $storage->getQuery()
+        ->condition('uid', $account->id())
+        ->condition('status', 1)
+        ->accessCheck(FALSE)
+        ->execute();
+      foreach ($storage->loadMultiple($my_movies_movie_ids) as $my_movies_movie) {
+        /** @var Movie $my_movies_movie */
+        $my_movies_movie->set('status', FALSE)->save();
+      }
+      break;
+
+    case 'user_cancel_reassign':
+      // Anonymize movies.
+      $storage = \Drupal::entityTypeManager()->getStorage('my_movies_movie');
+      $my_movies_movie_ids = $storage->getQuery()
+        ->condition('uid', $account->id())
+        ->accessCheck(FALSE)
+        ->execute();
+      foreach ($storage->loadMultiple($my_movies_movie_ids) as $my_movies_movie) {
+        /** @var Movie $my_movies_movie */
+        $my_movies_movie->setOwnerId(0)->save();
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_predelete() for user entities.
+ */
+function my_movies_user_predelete(UserInterface $account): void
+{
+  // Delete movies that belong to this account.
+  $storage = \Drupal::entityTypeManager()->getStorage('my_movies_movie');
+  $my_movies_movie_ids = $storage->getQuery()
+    ->condition('uid', $account->id())
+    ->accessCheck(FALSE)
+    ->execute();
+  $storage->delete(
+    $storage->loadMultiple($my_movies_movie_ids)
+  );
+}
+
+
+/**
+ * Gets an array of language options
+ *
+ * @return array
+ */
+function get_movie_language_options(): array
+{
+  // Immutable Config (Read Only).
+  $config = \Drupal::config(MovieSettingsForm::SETTINGS);
+
+  $timezones = $config->get(MovieSettingsForm::SETTING_KEY_MOVIE_LANGUAGES);
+
+  if (empty($timezones)) {
+    // if no value, use this as default
+    $timezones = "en|English\r\nes|Spanish\r\ntl|Tagalog";
+  }
+
+  // covers different line feed combinations
+  $lines = preg_split("/\r\n|\n|\r/", $timezones);
+
+  $options = [];
+
+  foreach ($lines as $line) {
+
+    $arrOption = explode("|", $line);
+
+    if (count($arrOption) === 2) {
+
+      // 0 = key
+      // 1 = display value
+      $options[$arrOption[0]] = $arrOption[1];
+    } else {
+
+      $options[$arrOption[0]] = $arrOption[0];
+    }
+  }
+
+  return $options;
+}

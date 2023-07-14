@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - my_movies
+id: my_movies_movie_save_action
+label: 'Save movies'
+type: my_movies_movie
+plugin: entity:save_action:my_movies_movie
+configuration: {  }

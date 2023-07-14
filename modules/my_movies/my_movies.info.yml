@@ -1,0 +1,5 @@
+name: 'My Movies'
+type: module
+description: 'Simple custom module with an entity and a setting for that entity.'
+package: Custom
+core_version_requirement: ^10

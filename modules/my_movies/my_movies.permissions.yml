@@ -1,0 +1,3 @@
+administer my_movies_movie:
+  title: 'Administer movies'
+  restrict access: true

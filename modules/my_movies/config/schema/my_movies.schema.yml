@@ -1,0 +1,15 @@
+# references: web/modules/custom/my_movies/config/install/my_movies.settings.yml
+my_movies.settings:
+  type: config_object
+  label: "My Movies Settings"
+  mapping:
+    # Based on MovieSettingsForm::SETTING_KEY_MOVIE_LANGUAGES = "movie.languages"
+    # movie = refers to the entity and is a top-level grouping
+    # languages = the actual setting we want to save and use in our custom module
+    movie:
+      type: mapping
+      label: "Movie Entity Settings"
+      mapping:
+        languages:
+          type: string
+          label: "Language Options"
