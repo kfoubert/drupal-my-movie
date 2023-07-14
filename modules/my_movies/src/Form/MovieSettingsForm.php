@@ -100,12 +100,11 @@ final class MovieSettingsForm extends FormBase
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void
   {
-
-    $config = $this->config(static::SETTINGS);
+    $config = $this->configFactory()->getEditable(static::SETTINGS);
 
     $config->set(static::SETTING_KEY_MOVIE_LANGUAGES, $form_state->getValue(static::FORM_INPUT_NAME_LANGUAGES));
 
-    // set value of api token
+    // save the configuration
     $config->save();
 
     $this->messenger()->addStatus($this->t('The configuration has been updated.'));
